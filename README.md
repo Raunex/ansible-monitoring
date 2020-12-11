@@ -17,6 +17,6 @@ A role **ansible-docker** realizar a instalação do docker e docker-compose e e
 Na pasta **configs** estão todos os arquivos de configuração das aplicações listadas acima, edite os arquivos de acordo com o seu ambiente.
 
 ## Validado em ambientes Debian 10.
-## Embreve para ambietes CentOS 8.
+## Em breve para ambietes CentOS 8.
 
 Criado por [Rauny Moreira](https://www.linkedin.com/in/rauny-moreira/).
