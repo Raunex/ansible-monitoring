@@ -1,0 +1,12 @@
+[allhosts]
+#HOSTNAME ansible_host=#IP
+
+
+[prometheu_server]
+#HOSTNAME
+
+[all:vars]
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
+ansible_user = #USER
+#ansible_ssh_private_key_file = #SSH_KEY
+ansible_ssh_pass = #PASSWORD

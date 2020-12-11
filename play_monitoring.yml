@@ -1,0 +1,13 @@
+---
+- name: Docker compose
+  hosts: allhosts
+  #define variable for prometheus
+  vars:
+     #install docker when install is true
+     install: true
+     #config the prometheus-server configuration when config is true
+  become: yes
+  roles:
+   - ansible-monitoring-debian
+
+

@@ -1,0 +1,50 @@
+---
+- include_tasks: setup-Debian.yml
+  when: ansible_os_family == 'Debian'
+
+- name: Install Docker.
+  package:
+    name: "{{ docker_package }}"
+    state: "{{ docker_package_state }}"
+  notify: restart docker
+
+- name: Ensure Docker is started and enabled at boot.
+  service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
+
+- name: Ensure handlers are notified now to avoid firewall conflicts.
+  meta: flush_handlers
+
+- include_tasks: docker-compose.yml
+  when: docker_install_compose | bool
+
+- include_tasks: docker-users.yml
+  when: docker_users | length > 0
+
+- name: Create data directory for prometheus
+  file:
+    state: directory
+    path: /prometheus
+    mode: 0777
+
+- name: uplodad docker-compose
+  template:
+    src: docker-compose.yml.j2
+    dest: "/prometheus/docker-compose.yml"
+
+- name: copy directory
+  copy:
+    src: ./configs/
+    dest: "/prometheus/configs/"
+
+- name: Run docker compose
+  command: docker-compose up -d
+  args:
+    chdir: /prometheus
+  become: yes
+  become_user: root
+
+- debug:
+    var: output

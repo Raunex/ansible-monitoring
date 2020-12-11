@@ -1,0 +1,119 @@
+version: '3.3'
+
+networks:
+  prometheus:
+    driver: bridge
+ 
+volumes:
+  prometheus:
+  alertmanager:
+  grafana:
+  apache:
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.22.2
+    hostname: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - prometheus:/prometheus
+      - ./configs/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./configs/prometheus/alert.rules:/etc/prometheus/rules/alert.rules
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    restart: always
+    networks:
+      - prometheus
+
+#  alertmanager:
+#    image: prom/alertmanager
+#    hostname: alertmanager
+#    ports:
+#      - 9093:9093
+#    volumes:
+#      - alertmanager:/alertmanager
+#      - ./configs/alertmanager/alertmanager.yml:/etc/alertmanager/config.yml
+#    networks:
+#      - prometheus
+#    command:
+#      - '--config.file=/etc/alertmanager/config.yml'
+#      - '--storage.path=/alertmanager'
+#      - '--web.external-url=http://alertmanager.domain.com.br'
+#    networks:
+#      - prometheus
+#    depends_on:
+#      - prometheus
+
+  grafana:
+    image: grafana/grafana:7.3.3
+    hostname: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana:/var/lib/grafana
+      - ./configs/grafana/ldap.toml:/etc/grafana/ldap.toml
+      - ./configs/grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./configs/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+
+    depends_on:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=password
+      - GF_SECURITY_ADMIN_USER=admin
+
+    networks:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.38.4
+    hostname: cadvisor
+    ports:
+      - 8080:8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /dev/disk/:/dev/disk:ro
+    networks:
+      - prometheus
+    depends_on:
+      - prometheus
+    restart: always
+
+  node-exporter:
+    image: prom/node-exporter:v1.0.1
+    hostname: node
+    ports:
+      - 9100:9100
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points="^(/rootfs|/host|)/(sys|proc|dev|host|etc)($$|/)"'
+      - '--collector.filesystem.ignored-fs-types="^(sys|proc|auto|cgroup|devpts|ns|au|fuse\.lxc|mqueue)(fs|)$$"'
+    environment:
+      HOST_HOSTNAME: /etc/hostname
+    networks:
+      - prometheus
+    depends_on:
+      - prometheus
+    restart: always
+
+  apache:
+    image: httpd:2.4
+    hostname: apache
+    ports:
+      - 80:80
+    volumes:
+      - apache:/apache
+      - ./configs/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+    networks:
+      - prometheus
+

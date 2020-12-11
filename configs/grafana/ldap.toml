@@ -1,0 +1,17 @@
+[[servers]]
+host = "ipa.domain.com.br"
+port = 389
+use_ssl = false
+start_tls = false
+ssl_skip_verify = false
+bind_dn = "uid=svc_grafana,cn=users,cn=accounts,dc=domain,dc=com,dc=br"
+bind_password = 'Iingi0cu'
+search_filter = "(mail=%s)"
+search_base_dns = ["cn=users,cn=accounts,dc=domain,dc=com,dc=br"]
+
+[servers.attributes]
+name = "givenName"
+surname = "sn"
+username = "cn"
+member_of = "memberOf"
+email =  "mail"

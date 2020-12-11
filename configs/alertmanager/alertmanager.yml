@@ -1,0 +1,31 @@
+route:
+    repeat_interval: 24h
+    group_interval: 1m
+    receiver: telegram
+    routes:
+     - match_re:
+         severity: .*
+       continue: true
+       receiver: e-mail
+     - match_re:
+         severity: .*
+       receiver: telegram
+
+
+receivers:
+    - name: 'e-mail'
+      email_configs:
+      - to: 'noc@domain.com.br'
+        send_resolved: true
+        from: 'svc_notification@domain.com.br'
+        smarthost: zimbr.domain.com.br:587
+        auth_username: svc_notification@domain.com.br
+        auth_password: password
+        require_tls: true
+    - name: 'telegram'
+      webhook_configs:
+      - send_resolved: True
+        url: http://bot-telegram:9087
+      - send_resolved: True
+
+
